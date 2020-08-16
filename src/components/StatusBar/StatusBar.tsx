@@ -1,14 +1,15 @@
 import React from 'react'
-import { StatusBar as RNStatusBar } from 'react-native'
+import { StatusBar as RNStatusBar, Platform } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 interface Props {
   height?: number;
 }
 
-const StatusBarAndroid23: React.FC<Props> = (props) => {
+const StatusBar: React.FC<Props> = (props) => {
+  const height = Platform.OS === 'ios' ? 0 : (props.height || 20);
   return <LinearGradient
-    style={{ height: props.height || 20 }}
+    style={{ height }}
     colors={['#feb301', '#7d1ce8']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
@@ -17,7 +18,4 @@ const StatusBarAndroid23: React.FC<Props> = (props) => {
   </LinearGradient>
 }
 
-// const StatusBarIOSAndroid: React.FC = () => {
-//   return null;
-// }
-export default StatusBarAndroid23;
+export default StatusBar;

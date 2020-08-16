@@ -40,7 +40,6 @@ class MainScreen extends React.Component<Props, State> {
     }
     try {
       const position = await getCurrentPosition();
-      console.log('position: ', position)
       this.setState({ position }, this.getForecast);
     } catch (e) {
       this.setState({ error: e.message || e.toString() })
@@ -49,9 +48,7 @@ class MainScreen extends React.Component<Props, State> {
 
   private getForecast = () => {
     const { city, refreshing, position } = this.state;
-    console.warn('city: ', city)
     if (refreshing) {
-      console.warn('warning: get forecast not started', { city, refreshing })
       return;
     }
     if (city) {
@@ -72,10 +69,8 @@ class MainScreen extends React.Component<Props, State> {
 
   private setForecast = (response: IForecastResponse) => {
     const { ok } = response;
-    console.log('forecast response: ', response.data);
     if (ok && response.data) {
       const data = response.data as IForecastResponseDataSuccess;
-      console.log('forecast: ', data);
       const { city } = this.state;
       const cityName = data.city.name;
       if (!city || (city && cityName && city.toLowerCase() !== cityName.toLowerCase())) {
@@ -163,6 +158,7 @@ const styles: {
     flex: 1,
   },
   container: {
+    top: Platform.OS === 'ios' ? -20 : undefined,
     paddingBottom: 20,
     flex: 1,
     flexDirection: 'column',

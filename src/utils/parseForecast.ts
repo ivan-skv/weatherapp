@@ -1,6 +1,5 @@
 import { IForecastResponseDataSuccess, IForecast, PartOfDay, WeatherType } from './interfaces';
 import moment from 'moment'
-import 'moment/locale/ru'
 import { IForecastDetails } from 'src/components/ForecastCard/ForecastCardItem';
 
 type IGroupedByDayForecast = { [date: string]: IForecast[] };
@@ -29,7 +28,6 @@ const parseForecast = (data: IForecastResponseDataSuccess) => {
   const sortedDates: string[] = [];
   const groupedByDay = data.list.reduce((acc, cur) => {
     const date = moment.utc(cur.dt * 1000).format('YYYY-MM-DD');
-    console.log(cur.dt_txt, date)
     if (sortedDates.indexOf(date) === -1) {
       sortedDates.push(date)
     }
@@ -37,8 +35,6 @@ const parseForecast = (data: IForecastResponseDataSuccess) => {
     acc[date].push(cur)
     return acc;
   }, {} as IGroupedByDayForecast)
-  console.log('parseForecast.dates: ', sortedDates)
-  console.log('parseForecast.groupedByDay: ', groupedByDay)
   const result = sortedDates.reduce((res, date) => {
     const list = groupedByDay[date];
     const groupedByPartOfDay = list.reduce((acc, cur) => {
@@ -47,7 +43,6 @@ const parseForecast = (data: IForecastResponseDataSuccess) => {
       acc[partOfDay].push(cur);
       return acc;
     }, {} as IGroupedByPartOfDayForecast)
-    console.log('parseForecast[' + date + '].groupedByPartOfDay', groupedByPartOfDay)
     const sortedKeys = Object.keys(groupedByPartOfDay).sort((a, b) => sortedPartsOfDay.indexOf(a as PartOfDay) - sortedPartsOfDay.indexOf(b as PartOfDay));
     const forecast = sortedKeys.reduce((acc, key) => {
       const array = groupedByPartOfDay[key as PartOfDay]
@@ -66,7 +61,6 @@ const parseForecast = (data: IForecastResponseDataSuccess) => {
       }
       return acc;
     }, {} as { [x in PartOfDay]: IForecastDetails })
-    console.log('parseForecast[' + date + '].forecast', forecast)
     res.push({
       date,
       data: sortedKeys.map(key => forecast[key as PartOfDay]),
@@ -76,7 +70,6 @@ const parseForecast = (data: IForecastResponseDataSuccess) => {
     date: string;
     data: IForecastDetails[];
   }>);
-  console.log('parseForecast.result', result)
   return result;
 }
 

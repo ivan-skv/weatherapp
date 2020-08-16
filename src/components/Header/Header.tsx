@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, StyleProp, ViewStyle, TextStyle } from 'react-native'
+import { Text, StyleProp, ViewStyle, TextStyle, Platform } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 interface Props {
@@ -26,7 +26,8 @@ const styles: {
   text: StyleProp<TextStyle>;
 } = {
   view: {
-    height: 60,
+    height: 60 + (Platform.OS === 'ios' ? 20 : 0),
+    paddingTop: Platform.OS === 'ios' ? 20 : undefined,
     width: '100%',
     alignItems: 'center',
     flexDirection: 'row',
