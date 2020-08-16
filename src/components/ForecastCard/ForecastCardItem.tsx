@@ -25,7 +25,7 @@ const ForecastCardItem: React.FC<Props> = (props) => {
     <Text style={styles.weather}>{weather}</Text>
     <Image
       style={styles.icon}
-      source={{ uri }}
+      source={{ uri, width: 40, height: 40 }}
       resizeMode="contain"
       width={40}
       height={40}
