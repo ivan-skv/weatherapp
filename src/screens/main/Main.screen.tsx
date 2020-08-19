@@ -3,15 +3,19 @@ import {
   SafeAreaView, FlatList, RefreshControl, StyleProp, ViewStyle, Alert, Platform,
 } from 'react-native'
 import { CityInput, Header, StatusBar, ScreenWrapper, ForecastCard } from 'src/components'
-import getForecast from 'src/utils/getForecast'
-import { IForecastResponse, IForecastResponseDataSuccess, IForecastResponseDataError } from 'src/utils/interfaces'
 import requestAndroidPermissions from 'src/utils/requestAndroidPermissions'
 import getCurrentPosition from 'src/utils/getCurrentPosition'
 import { GeolocationResponse } from '@react-native-community/geolocation'
 import parseForecast from 'src/utils/parseForecast'
 import { IForecastDetails } from 'src/components/ForecastCard/ForecastCardItem'
+import { IWeatherState } from 'src/redux/weather/weatherInterfaces'
+import * as weatherActions from 'src/redux/weather/weatherActions'
 
-interface Props { }
+interface Props {
+  weather: IWeatherState;
+  weatherFetch: typeof weatherActions.weatherFetch;
+}
+
 interface State {
   refreshing: boolean;
   city?: string;
@@ -46,31 +50,37 @@ class MainScreen extends React.Component<Props, State> {
     }
   }
 
+  componentDidUpdate(prevProps: Props) {
+    const { weather } = this.props;
+    if (prevProps.weather.isFetching && !weather.isFetching) {
+      if (weather.error) {
+        this.displayError()
+      } else {
+        this.setForecast()
+      }
+    }
+  }
+
   private getForecast = () => {
-    const { city, refreshing, position } = this.state;
-    if (refreshing) {
+    const { weather, weatherFetch } = this.props;
+    const { city, position } = this.state;
+    if (weather.isFetching) {
       return;
     }
     if (city) {
-      this.setState({ refreshing: true, error: '' }, async () => {
-        const response = await getForecast({ q: city });
-        this.setForecast(response)
-      })
+      weatherFetch({ q: city })
     } else if (position) {
-      this.setState({ refreshing: true, error: '' }, async () => {
-        const { coords: { latitude, longitude } } = position;
-        const response = await getForecast({ lat: latitude, lon: longitude });
-        this.setForecast(response)
-      })
+      const { coords: { latitude, longitude } } = position;
+      weatherFetch({ lat: latitude, lon: longitude });
     } else {
       this.setState({ inputError: 'City must not be empty' })
     }
   }
 
-  private setForecast = (response: IForecastResponse) => {
-    const { ok } = response;
-    if (ok && response.data) {
-      const data = response.data as IForecastResponseDataSuccess;
+  private setForecast = () => {
+    const { weather } = this.props;
+    if (weather.data) {
+      const { data } = weather
       const { city } = this.state;
       const cityName = data.city.name;
       if (!city || (city && cityName && city.toLowerCase() !== cityName.toLowerCase())) {
@@ -78,28 +88,19 @@ class MainScreen extends React.Component<Props, State> {
       }
       this.setState({
         data: parseForecast(data),
-        refreshing: false,
       })
-    } else if (!ok && response.data) {
-      const data = response.data as IForecastResponseDataError;
-      this.setState({
-        error: data.message,
-        data: [],
-        refreshing: false,
-      }, this.displayError)
     } else {
       this.setState({
-        error: `unknown error: status code ${response.status}`,
-        refreshing: false,
         data: [],
-      }, this.displayError)
+      })
     }
   }
 
   private displayError = () => {
-    const { error } = this.state;
+    const { weather } = this.props;
+    const { error } = weather;
     if (error) {
-      Alert.alert('Error', error, [
+      Alert.alert('Error', typeof error === 'string' ? error : error.message, [
         {
           text: 'Ok',
           onPress: () => this.setState({ error: '' }),
@@ -116,7 +117,8 @@ class MainScreen extends React.Component<Props, State> {
   }
 
   render() {
-    const { refreshing, city, data, inputError, defaultCity } = this.state
+    const { weather } = this.props;
+    const { city, data, inputError, defaultCity } = this.state
     return <SafeAreaView style={styles.safeAreaView}>
       <StatusBar />
       <ScreenWrapper style={styles.container}>
@@ -139,7 +141,7 @@ class MainScreen extends React.Component<Props, State> {
           renderItem={this.renderItem}
           keyExtractor={(_, index) => index.toString()}
           refreshControl={<RefreshControl
-            refreshing={refreshing}
+            refreshing={weather.isFetching}
             onRefresh={this.getForecast}
           />}
         />
