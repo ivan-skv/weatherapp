@@ -1,4 +1,5 @@
 import { create } from 'apisauce'
+import config from 'src/config'
 
 const apisauce = create({
   baseURL: 'https://api.openweathermap.org/data/2.5',
@@ -6,7 +7,7 @@ const apisauce = create({
 
 apisauce.addRequestTransform((request) => {
   const params = Object.assign({}, request.params);
-  params.appid = 'fc5d1fc95f19a90681f3ec5c2bb71245'
+  params.appid = config.apiKey
   params.units = 'metric';
   request.params = params;
 })
