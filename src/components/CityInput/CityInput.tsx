@@ -31,7 +31,7 @@ class CityInput extends React.Component<Props> {
         tintColor={'rgba(0, 0, 0, 0.55)'}
         activeLineWidth={1.5}
         containerStyle={[styles.containerStyle, containerStyle]}
-        labelOffset={{ x0: 40, y0: 0, x1: 0, y1: -10 }}
+        labelOffset={{ x0: 40, y0: 0, x1: 0, y1: -10 }} // tslint:disable-line
         inputContainerStyle={[styles.inputContainerStyle, inputContainerStyle, error ? styles.errorContainerStyle : null]}
         style={{ marginLeft: 40 }}
       />

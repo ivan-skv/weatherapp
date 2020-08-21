@@ -10,10 +10,14 @@ import parseForecast from 'src/utils/parseForecast'
 import { IForecastDetails } from 'src/components/ForecastCard/ForecastCardItem'
 import { IWeatherState } from 'src/redux/weather/weatherInterfaces'
 import * as weatherActions from 'src/redux/weather/weatherActions'
+import * as cityActions from 'src/redux/city/cityActions'
+import { ICityState } from 'src/redux/city/cityInterfaces'
 
 interface Props {
   weather: IWeatherState;
+  city: ICityState;
   weatherFetch: typeof weatherActions.weatherFetch;
+  citySet: typeof cityActions.citySet;
 }
 
 interface State {
@@ -31,8 +35,9 @@ class MainScreen extends React.Component<Props, State> {
     super(props)
     this.state = {
       refreshing: false,
-      data: [],
+      data: props.weather.data ? parseForecast(props.weather.data) : [],
       inputError: '',
+      city: props.city.name || undefined,
     }
   }
 
@@ -62,16 +67,19 @@ class MainScreen extends React.Component<Props, State> {
   }
 
   private getForecast = () => {
-    const { weather, weatherFetch } = this.props;
+    const { weather, weatherFetch, citySet } = this.props;
     const { city, position } = this.state;
     if (weather.isFetching) {
       return;
     }
     if (city) {
       weatherFetch({ q: city })
+      citySet({ name: city })
+      console.warn('by city name')
     } else if (position) {
       const { coords: { latitude, longitude } } = position;
       weatherFetch({ lat: latitude, lon: longitude });
+      console.warn('by coords')
     } else {
       this.setState({ inputError: 'City must not be empty' })
     }

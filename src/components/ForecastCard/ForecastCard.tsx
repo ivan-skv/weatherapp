@@ -40,7 +40,7 @@ const styles: {
     position: 'relative',
     flexDirection: 'column',
     overflow: 'hidden',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'rgba(10, 10, 10, 0.15)',
     marginTop: 20,
     borderRadius: 10,
     padding: 10,
