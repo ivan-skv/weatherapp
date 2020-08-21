@@ -11,4 +11,4 @@ export const weatherFetch = (params: IForecastRequestParams): IAction<IWeatherAc
 
 export const weatherSet = (data: IForecastResponseDataSuccess): IAction<IWeatherActionType, IForecastResponseDataSuccess> => ({ type: weatherActionTypes.WEATHER_SET, payload: data })
 
-export const weatherSetError = (error: IWeatherStateError): IAction<IWeatherActionType> => ({ type: weatherActionTypes.WEATHER_SET, payload: { error } })
+export const weatherSetError = (error: IWeatherStateError): IAction<IWeatherActionType> => ({ type: weatherActionTypes.WEATHER_SET, error })

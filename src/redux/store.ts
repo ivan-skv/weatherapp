@@ -12,12 +12,16 @@ import eventEmitter from 'src/utils/eventEmitter'
 const sagaMiddleware = createSagaMiddleware()
 
 const persistTransform = createTransform(
-  (inboundState, key) => {
-    console.log('inbound', key, inboundState)
+  (inboundState, _) => {
     return inboundState;
   },
   (outboundState, key) => {
-    console.log('outbound', key, outboundState)
+    if (key === 'isFetching') {
+      return false;
+    }
+    if (key === 'error') {
+      return '';
+    }
     return outboundState;
   }
 )
@@ -47,6 +51,8 @@ sagaMiddleware.run(
 const persistor = persistStore(store, null, () => {
   eventEmitter.emit('persist/BOOTSTRAP', store.getState())
 })
+
+// persistor.purge()
 
 export { store, persistor }
 
