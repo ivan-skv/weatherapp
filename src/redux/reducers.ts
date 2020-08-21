@@ -4,6 +4,7 @@ import storage from '@react-native-community/async-storage'
 
 import weatherReducer from './weather/weatherReducer'
 import cityReducer from './city/cityReducer'
+import geolocationReducer from './geolocation/geolocationReducer'
 
 const persistTransform = createTransform(
   (inboundState, _) => {
@@ -34,6 +35,10 @@ const reducers = combineReducers({
   city: persistReducer(
     createPersistConfig('city'),
     cityReducer,
+  ),
+  geolocation: persistReducer(
+    createPersistConfig('geolocation'),
+    geolocationReducer,
   ),
 })
 

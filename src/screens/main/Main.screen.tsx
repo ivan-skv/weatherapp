@@ -3,30 +3,28 @@ import {
   SafeAreaView, FlatList, RefreshControl, StyleProp, ViewStyle, Alert, Platform,
 } from 'react-native'
 import { CityInput, Header, StatusBar, ScreenWrapper, ForecastCard } from 'src/components'
-import requestAndroidPermissions from 'src/utils/requestAndroidPermissions'
-import getCurrentPosition from 'src/utils/getCurrentPosition'
-import { GeolocationResponse } from '@react-native-community/geolocation'
 import parseForecast from 'src/utils/parseForecast'
 import { IForecastDetails } from 'src/components/ForecastCard/ForecastCardItem'
 import { IWeatherState } from 'src/redux/weather/weatherInterfaces'
 import * as weatherActions from 'src/redux/weather/weatherActions'
 import * as cityActions from 'src/redux/city/cityActions'
+import * as geolocationActions from 'src/redux/geolocation/geolocationActions'
 import { ICityState } from 'src/redux/city/cityInterfaces'
+import { IGeolocationState } from 'src/redux/geolocation/geolocationIntefaces'
 
 interface Props {
   weather: IWeatherState;
   city: ICityState;
+  geolocation: IGeolocationState;
   weatherFetch: typeof weatherActions.weatherFetch;
   citySet: typeof cityActions.citySet;
+  geolocationFetch: typeof geolocationActions.geolocationFetch;
 }
 
 interface State {
-  refreshing: boolean;
-  city?: string;
   data?: any[];
-  error?: string;
   inputError?: string;
-  position?: GeolocationResponse;
+  city?: string;
   defaultCity?: string;
 }
 
@@ -34,52 +32,47 @@ class MainScreen extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      refreshing: false,
       data: props.weather.data ? parseForecast(props.weather.data) : [],
       inputError: '',
       city: props.city.name || undefined,
     }
   }
 
-  async componentDidMount() {
-    const granted = Platform.OS === 'android' ? await requestAndroidPermissions() : true;
-    if (!granted) {
-      Alert.alert('Warning', 'Geolocation permissions not granted');
-      return;
-    }
-    try {
-      const position = await getCurrentPosition();
-      this.setState({ position }, this.getForecast);
-    } catch (e) {
-      this.setState({ error: e.message || e.toString() })
-    }
+  componentDidMount() {
+    const { geolocationFetch } = this.props;
+    geolocationFetch()
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { weather } = this.props;
+    const { weather, geolocation } = this.props;
     if (prevProps.weather.isFetching && !weather.isFetching) {
       if (weather.error) {
-        this.displayError()
+        this.displayWeatherError()
       } else {
         this.setForecast()
       }
     }
+    if (prevProps.geolocation.isFetching && !geolocation.isFetching) {
+      if (geolocation.error) {
+        this.displayGeolocationError()
+      }
+      this.getForecast()
+    }
   }
 
   private getForecast = () => {
-    const { weather, weatherFetch, citySet } = this.props;
-    const { city, position } = this.state;
+    const { weather, weatherFetch, citySet, geolocation } = this.props;
     if (weather.isFetching) {
       return;
     }
+    const { data: position } = geolocation;
+    const { city } = this.state;
     if (city) {
       weatherFetch({ q: city })
       citySet({ name: city })
-      console.warn('by city name')
     } else if (position) {
       const { coords: { latitude, longitude } } = position;
       weatherFetch({ lat: latitude, lon: longitude });
-      console.warn('by coords')
     } else {
       this.setState({ inputError: 'City must not be empty' })
     }
@@ -96,24 +89,39 @@ class MainScreen extends React.Component<Props, State> {
       }
       this.setState({
         data: parseForecast(data),
+        inputError: '',
       })
     } else {
       this.setState({
         data: [],
+        inputError: '',
       })
     }
   }
 
-  private displayError = () => {
+  private displayWeatherError = () => {
     const { weather } = this.props;
-    const { error } = weather;
-    if (error) {
-      Alert.alert('Error', typeof error === 'string' ? error : error.message, [
-        {
+    if (weather.error) {
+      Alert.alert(
+        'Error',
+        typeof weather.error === 'string' ? weather.error : weather.error.message,
+        [{
           text: 'Ok',
-          onPress: () => this.setState({ error: '' }),
-        },
-      ])
+        }]
+      )
+    }
+  }
+
+  private displayGeolocationError = () => {
+    const { geolocation } = this.props;
+    if (geolocation.error) {
+      Alert.alert(
+        'Warning',
+        geolocation.error,
+        [{
+          text: 'Ok',
+        }]
+      )
     }
   }
 

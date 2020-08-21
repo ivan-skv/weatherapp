@@ -4,9 +4,9 @@ import createSagaMiddleware from 'redux-saga'
 
 import { composeWithDevTools } from 'redux-devtools-extension'
 
-import weatherSaga from './weather/weatherSaga'
-import eventEmitter from 'src/utils/eventEmitter'
 import reducers from './reducers'
+import sagas from './sagas'
+import onRehydrated from './onRehydrated'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -16,14 +16,12 @@ const store = createStore(
 )
 
 sagaMiddleware.run(
-  weatherSaga,
+  sagas,
 )
 
 const persistor = persistStore(store, null, () => {
-  eventEmitter.emit('persist/BOOTSTRAP', store.getState())
+  onRehydrated(store)
 })
-
-// persistor.purge()
 
 export { store, persistor }
 

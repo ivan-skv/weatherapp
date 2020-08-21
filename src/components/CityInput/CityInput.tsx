@@ -23,7 +23,7 @@ class CityInput extends React.Component<Props> {
           resizeMode="contain"
           width={24}
           height={24}
-          style={styles.icon}
+          style={[styles.icon, error ? { top: -10 } : null]}
         />
       </TouchableOpacity>
       <OutlinedTextField
