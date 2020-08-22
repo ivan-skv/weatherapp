@@ -1,0 +1,21 @@
+diff --git a/node_modules/@types/react-native-material-textfield/index.d.ts b/node_modules/@types/react-native-material-textfield/index.d.ts
+index 2e56d0c..bfa0273 100644
+--- a/node_modules/@types/react-native-material-textfield/index.d.ts
++++ b/node_modules/@types/react-native-material-textfield/index.d.ts
+@@ -74,6 +74,8 @@ export interface TextFieldProps extends TextInputProps {
+     multiline?: boolean;
+ 
+     formatText?(text: string): string;
++
++    labelOffset?: { x0?: number; y0?: number; x1?: number; y1?: number; };
+ }
+ 
+ /**
+@@ -111,5 +113,5 @@ export class TextField extends React.Component<TextFieldProps, any> {
+     setValue(value?: string): void;
+ }
+ 
+-export class OutlinedTextField extends TextField {}
+-export class FilledTextField extends TextField {}
++export class OutlinedTextField extends TextField { }
++export class FilledTextField extends TextField { }

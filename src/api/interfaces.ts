@@ -45,6 +45,8 @@ export interface IForecast {
     pod: 'd' | 'n';
   };
   dt_txt: string;
+  date?: string;
+  pod?: PartOfDay;
 }
 
 export interface IForecastMain {
@@ -77,4 +79,26 @@ export interface ICity {
   timezone: number;
   sunrise: number;
   sunset: number;
+}
+
+export interface IForecastSummary {
+  title?: PartOfDay;
+  temperature: number;
+  weather: WeatherType;
+  icon: string;
+  date?: string;
+}
+
+export interface IForecastGroupedMap {
+  date: string;
+  list: IForecast[];
+  pod: Map<PartOfDay, IForecast[]>;
+  summary: Map<PartOfDay, IForecastSummary>;
+}
+
+export interface IForecastGrouped {
+  date: string;
+  list: IForecast[];
+  pod: { [x in PartOfDay]: IForecast[] };
+  summary: { [x in PartOfDay]: IForecastSummary };
 }

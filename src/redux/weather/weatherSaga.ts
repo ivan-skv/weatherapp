@@ -2,7 +2,7 @@ import { call, put, takeLeading } from 'redux-saga/effects'
 import { IWeatherAction } from './weatherInterfaces';
 import * as api from 'src/api'
 import { weatherSet, weatherSetError, weatherActionTypes } from './weatherActions';
-import { IForecastResponse, IForecastResponseDataSuccess, IForecastResponseDataError } from 'src/utils/interfaces';
+import { IForecastResponse, IForecastResponseDataSuccess, IForecastResponseDataError } from 'src/api/interfaces';
 
 export function* weatherFetchSaga(action: IWeatherAction) {
   try {

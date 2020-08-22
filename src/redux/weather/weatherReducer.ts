@@ -1,10 +1,11 @@
 import { IWeatherAction, IWeatherState } from './weatherInterfaces'
 import { weatherActionTypes } from './weatherActions'
+import forecastParse from 'src/utils/forecastParse'
 
 export const initialWeatherState: IWeatherState = {
   isFetching: false,
   error: '',
-  data: undefined,
+  forecast: {},
 }
 
 const weatherReducer = (state = initialWeatherState, action: IWeatherAction): IWeatherState => {
@@ -14,7 +15,10 @@ const weatherReducer = (state = initialWeatherState, action: IWeatherAction): IW
         ...state,
         isFetching: false,
         error: action.error || '',
-        data: action.payload || state.data || initialWeatherState.data,
+        forecast: {
+          raw: action.payload || state.forecast.raw || initialWeatherState.forecast.raw,
+          byDate: action.payload ? forecastParse(action.payload) : (state.forecast.byDate || initialWeatherState.forecast.byDate),
+        },
       }
     case weatherActionTypes.WEATHER_FETCH:
       return {

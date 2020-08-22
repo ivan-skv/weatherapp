@@ -1,5 +1,5 @@
 import { IAction } from '../interfaces';
-import { IForecastResponseDataError, IForecastResponseDataSuccess } from 'src/utils/interfaces';
+import { IForecastResponseDataError, IForecastResponseDataSuccess, IForecastGrouped } from 'src/api/interfaces';
 
 export type IWeatherActionType = 'WEATHER_FETCH' | 'WEATHER_SET';
 
@@ -10,5 +10,8 @@ export type IWeatherStateError = string | IForecastResponseDataError;
 export interface IWeatherState {
   isFetching: boolean;
   error?: IWeatherStateError;
-  data?: IForecastResponseDataSuccess;
+  forecast: {
+    raw?: IForecastResponseDataSuccess;
+    byDate?: IForecastGrouped[];
+  };
 }

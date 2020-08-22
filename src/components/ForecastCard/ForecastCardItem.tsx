@@ -1,18 +1,10 @@
 import React from 'react'
 import { View, Text, Image, StyleProp, ViewStyle, TextStyle, ImageStyle } from 'react-native'
-import { PartOfDay } from 'src/utils/interfaces';
+import { IForecastSummary } from 'src/api/interfaces';
 
 interface Props {
-  details: IForecastDetails;
+  details: IForecastSummary;
   style?: StyleProp<ViewStyle>;
-}
-
-export interface IForecastDetails {
-  title: PartOfDay;
-  temperature: number;
-  weather: 'rain' | 'clouds' | 'clear' | 'thumderstorm' | 'drizzle' | 'snow' | 'mist' | 'smoke' | 'haze' | 'dust' | 'fog' | 'sand' | 'ash' | 'squall' | 'tornado';
-  icon: string;
-  date?: string;
 }
 
 const ForecastCardItem: React.FC<Props> = (props) => {

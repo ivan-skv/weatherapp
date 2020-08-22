@@ -3,14 +3,13 @@ import {
   SafeAreaView, FlatList, RefreshControl, StyleProp, ViewStyle, Alert, Platform,
 } from 'react-native'
 import { CityInput, Header, StatusBar, ScreenWrapper, ForecastCard } from 'src/components'
-import parseForecast from 'src/utils/parseForecast'
-import { IForecastDetails } from 'src/components/ForecastCard/ForecastCardItem'
 import { IWeatherState } from 'src/redux/weather/weatherInterfaces'
 import * as weatherActions from 'src/redux/weather/weatherActions'
 import * as cityActions from 'src/redux/city/cityActions'
 import * as geolocationActions from 'src/redux/geolocation/geolocationActions'
 import { ICityState } from 'src/redux/city/cityInterfaces'
 import { IGeolocationState } from 'src/redux/geolocation/geolocationIntefaces'
+import { IForecastGrouped } from 'src/api/interfaces'
 
 interface Props {
   weather: IWeatherState;
@@ -32,7 +31,6 @@ class MainScreen extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      data: props.weather.data ? parseForecast(props.weather.data) : [],
       inputError: '',
       city: props.city.name || undefined,
     }
@@ -49,18 +47,18 @@ class MainScreen extends React.Component<Props, State> {
       if (weather.error) {
         this.displayWeatherError()
       } else {
-        this.setForecast()
+        this.updateDefaultCity()
       }
     }
     if (prevProps.geolocation.isFetching && !geolocation.isFetching) {
       if (geolocation.error) {
         this.displayGeolocationError()
       }
-      this.getForecast()
+      this.forecastFetch()
     }
   }
 
-  private getForecast = () => {
+  private forecastFetch = () => {
     const { weather, weatherFetch, citySet, geolocation } = this.props;
     if (weather.isFetching) {
       return;
@@ -70,33 +68,27 @@ class MainScreen extends React.Component<Props, State> {
     if (city) {
       weatherFetch({ q: city })
       citySet({ name: city })
+      console.warn('city name', city)
     } else if (position) {
       const { coords: { latitude, longitude } } = position;
       weatherFetch({ lat: latitude, lon: longitude });
+      console.warn('coordinates', latitude, longitude)
     } else {
       this.setState({ inputError: 'City must not be empty' })
     }
   }
 
-  private setForecast = () => {
+  private updateDefaultCity = () => {
     const { weather } = this.props;
-    if (weather.data) {
-      const { data } = weather
+    if (weather.forecast.raw) {
+      const { forecast: { raw: data } } = weather
       const { city } = this.state;
       const cityName = data.city.name;
       if (!city || (city && cityName && city.toLowerCase() !== cityName.toLowerCase())) {
         this.setState({ defaultCity: cityName })
       }
-      this.setState({
-        data: parseForecast(data),
-        inputError: '',
-      })
-    } else {
-      this.setState({
-        data: [],
-        inputError: '',
-      })
     }
+    this.setState({ inputError: '' })
   }
 
   private displayWeatherError = () => {
@@ -125,16 +117,19 @@ class MainScreen extends React.Component<Props, State> {
     }
   }
 
-  renderItem = ({ item }: { item: { date: string, data: IForecastDetails[] }; }) => {
+  renderItem = ({ item, index }: { item: IForecastGrouped; index: number; }) => {
+    const { weather } = this.props;
     return <ForecastCard
-      data={item.data}
       date={item.date}
+      data={item.summary}
+      last={weather.forecast.byDate?.length == (index + 1)}
+      onPress={() => console.warn('forecast ', item.date, JSON.stringify(item))}
     />
   }
 
   render() {
     const { weather } = this.props;
-    const { city, data, inputError, defaultCity } = this.state
+    const { city, inputError, defaultCity } = this.state
     return <SafeAreaView style={styles.safeAreaView}>
       <StatusBar />
       <ScreenWrapper style={styles.container}>
@@ -148,17 +143,17 @@ class MainScreen extends React.Component<Props, State> {
           }}
           error={inputError}
           label="Select city"
-          onEndEditing={this.getForecast}
-          onSearch={this.getForecast}
+          onEndEditing={this.forecastFetch}
+          onSearch={this.forecastFetch}
         />
         <FlatList
-          data={data}
+          data={weather.forecast.byDate}
           contentContainerStyle={styles.list}
           renderItem={this.renderItem}
           keyExtractor={(_, index) => index.toString()}
           refreshControl={<RefreshControl
             refreshing={weather.isFetching}
-            onRefresh={this.getForecast}
+            onRefresh={this.forecastFetch}
           />}
         />
       </ScreenWrapper>

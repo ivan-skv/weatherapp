@@ -1,32 +1,42 @@
 import React from 'react'
-import { Text, View, StyleProp, ViewStyle, TextStyle } from 'react-native'
+import { Text, View, StyleProp, ViewStyle, TextStyle, TouchableOpacity, TouchableOpacityProps } from 'react-native'
 import moment from 'moment'
 // import { BlurView } from '@react-native-community/blur'
-import ForecastCardItem, { IForecastDetails } from './ForecastCardItem';
+import ForecastCardItem from './ForecastCardItem';
+import { IForecastSummary, PartOfDay } from 'src/api/interfaces';
 
-interface Props {
+interface Props extends TouchableOpacityProps {
   date: string;
-  data: IForecastDetails[];
+  data: { [x in PartOfDay]: IForecastSummary };
+  last?: boolean;
 }
 
+const pods: PartOfDay[] = ['morning', 'afternoon', 'evening', 'night']
+
 export default class Weather extends React.Component<Props> {
-  private renderItem = (item: IForecastDetails, index: number) => {
+  private renderItem = (key: PartOfDay, index: number) => {
+    const { data } = this.props;
     return <ForecastCardItem
       key={index}
-      details={item}
+      details={data[key]}
       style={{ minWidth: '25%' }}
     />
   }
 
   render() {
-    const { data, date } = this.props;
-    return <View style={styles.view}>
+    const { data, date, style, last, ...restProps } = this.props;
+    const keys = Object.keys(data)
+    const sortedKeys = pods.filter(key => keys.includes(key))
+    return <TouchableOpacity
+      {...restProps}
+      style={[styles.view, style]}
+    >
       {/* <BlurView style={styles.blurView} blurType="light" /> */}
       <Text style={styles.date}>{moment.utc(date).format('dddd, MMMM DD, YYYY')}</Text>
-      <View style={[styles.data, data.length < 4 ? { justifyContent: 'flex-end' } : null]}>
-        {data.map(this.renderItem)}
+      <View style={[styles.data, keys.length < 4 ? { justifyContent: (last ? 'flex-start' : 'flex-end') } : null]}>
+        {data && sortedKeys.map(this.renderItem)}
       </View>
-    </View>;
+    </TouchableOpacity>;
   }
 }
 
@@ -40,7 +50,7 @@ const styles: {
     position: 'relative',
     flexDirection: 'column',
     overflow: 'hidden',
-    backgroundColor: 'rgba(10, 10, 10, 0.15)',
+    backgroundColor: 'rgba(200, 200, 200, 0.4)',
     marginTop: 20,
     borderRadius: 10,
     padding: 10,
